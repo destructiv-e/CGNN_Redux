@@ -1,0 +1,13 @@
+# created by virtualenv automatically
+*
+.idea/
+venv/
+__pycache__/
+*.iml
+# Игнорируем датасеты
+dataset/pubmed/
+*.tab
+*.txt
+*.csv
+*.h5
+*.pkl
