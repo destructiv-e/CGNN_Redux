@@ -1,6 +1,6 @@
 # GNN as Dynamical Systems
 
-Магистерская диссертация, СПбГУ, математико-механический факультет, кафедра прикладной кибернетики.
+СПбГУ, математико-механический факультет, кафедра прикладной кибернетики.
 
 Репозиторий содержит код и эксперименты по исследованию графовых нейронных сетей (GNN),
 рассматриваемых через призму теории динамических систем: сеть задаётся как ODE-блок
@@ -44,9 +44,6 @@ CGNN_Redux/
     └── out_<name>/                # готовые датасеты в текстовом формате: net.txt, feature.txt, label.txt, train/dev/test.txt
 ```
 
-Каждый пакет (`models`, `ode_solvers`, `trainers`) оформлен как обычный Python-пакет
-(есть `__init__.py`), поэтому импорты между модулями абсолютные, например
-`from models.gnn import GNN` или `from trainers.trainer import Trainer`.
 
 ### Формат датасета (`dataset/out_<name>/`)
 
@@ -119,7 +116,6 @@ python pyg_to_custom_format.py --dataset citeseer --outdir ./out_citeseer
 `coauthor-physics`, `wikics`, `roman-empire`, `amazon-ratings`, `minesweeper`, `tolokers`,
 `questions`. Полный список опций — `python dataset/pyg_to_custom_format.py --help`.
 
-В репозитории уже сконвертированы: `out_cora`, `out_citeseer`, `out_pubmed`, `out_film`, `out_texas`.
 
 ## Автор
 
