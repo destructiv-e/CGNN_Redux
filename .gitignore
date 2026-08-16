@@ -1,11 +1,14 @@
 # created by virtualenv automatically
-*
 .idea/
 venv/
+.venv/
 __pycache__/
 *.iml
+
 # Игнорируем датасеты
+dataset/pyg_data/
 dataset/pubmed/
+dataset/cora/
 *.tab
 *.txt
 *.csv
