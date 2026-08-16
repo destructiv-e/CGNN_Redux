@@ -12,6 +12,7 @@ dataset/cora/
 dataset/pyg_data
 *.tab
 *.txt
+!requirements.txt
 *.csv
 *.h5
 *.pkl
