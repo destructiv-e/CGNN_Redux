@@ -3,6 +3,9 @@ import os
 import copy
 import json
 import datetime
+import subprocess
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 opt = dict()
 
@@ -15,18 +18,18 @@ opt['lr'] = 0.0047
 opt['decay'] = 5e-4
 opt['self_link_weight'] = 0.555
 opt['alpha'] = 0.918
-opt['epoch'] = 400
+opt['epoch'] = 3
 opt['time']= 12.1
 
 def generate_command(opt):
-    cmd = 'python train.py'
-    for opt, val in opt.items():
-        cmd += ' --' + opt + ' ' + str(val)
+    cmd = [sys.executable, '-m', 'trainers.train']
+    for k, val in opt.items():
+        cmd += ['--' + k, str(val)]
     return cmd
 
 def run(opt):
     opt_ = copy.deepcopy(opt)
-    os.system(generate_command(opt_))
+    subprocess.run(generate_command(opt_), cwd=ROOT_DIR)
 
 for k in range(1):
     seed = k + 1

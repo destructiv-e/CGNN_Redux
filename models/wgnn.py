@@ -1,8 +1,5 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from coder_encoder_cgnn_wcgnn import *
-from ode_solver_wcgnn import *
+from encoders import *
+from ode_solvers.ode_solver_wcgnn import *
 
 class WGNN(nn.Module):
     def __init__(self, opt, adj, deg, time):

@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 import sys
 import copy
-import numpy as np
-import random
 import argparse
-import statistics
 import torch
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-from trainer import Trainer
-from gnn import GNN
-from wgnn import WGNN
-import loader
+from trainers.trainer import Trainer
+from models.gnn import GNN
+from models.wgnn import WGNN
+import data_loader as loader
 
 
 def main(opt):
