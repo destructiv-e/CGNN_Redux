@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+"""CLI-точка входа для обучения CGNN/WCGNN на одном датасете.
+
+Запускается как модуль из корня проекта, чтобы работали абсолютные
+импорты (`trainers.trainer`, `models.gnn`, ...):
+
+    python -m trainers.train --dataset dataset/out_cora --epoch 200 ...
+
+Обычно вызывается не напрямую, а через готовые конфигурации из
+`run_files/run_cgnn.py` / `run_files/run_wcgnn.py`. Полный список
+аргументов CLI и их значений по умолчанию -- в блоке `if __name__ ==
+'__main__'` ниже и в README проекта.
+"""
 import sys
 import copy
 import argparse
@@ -14,6 +26,16 @@ import data_loader as loader
 
 
 def main(opt):
+    """Загружает датасет, строит модель и запускает обучение.
+
+    Args:
+        opt: словарь гиперпараметров (обычно `vars(argparse.Namespace)`,
+            см. аргументы CLI в блоке `__main__`).
+
+    Returns:
+        tuple: (test_accuracy, best_dev_accuracy) для эпохи с лучшим
+        качеством на dev-выборке.
+    """
     device = torch.device('cuda' if opt['cuda'] == True and torch.cuda.is_available() else 'cpu')
     opt['cuda'] = device.type == 'cuda'
 
@@ -29,6 +51,7 @@ def main(opt):
     dev_file = opt['dataset'] + '/dev.txt'
     test_file = opt['dataset'] + '/test.txt'
 
+    # словари "строка -> индекс" для узлов, меток и признаков
     vocab_node = loader.Vocab(net_file, [0, 1])
     vocab_label = loader.Vocab(label_file, [1])
     vocab_feature = loader.Vocab(feature_file, [1])
@@ -40,6 +63,7 @@ def main(opt):
     graph = loader.Graph(file_name=net_file, entity=[vocab_node, 0, 1])
     label = loader.EntityLabel(file_name=label_file, entity=[vocab_node, 0], label=[vocab_label, 1])
     feature = loader.EntityFeature(file_name=feature_file, entity=[vocab_node, 0], feature=[vocab_feature, 1])
+    # симметризация графа + нормализация весов; d -- степени узлов до нормализации
     d = graph.to_symmetric(opt['self_link_weight'])
     feature.to_one_hot(binary=True)
     adj = graph.get_sparse_adjacency(opt['cuda'])
@@ -47,6 +71,7 @@ def main(opt):
     for k,v  in d.items():
         deg[k] = v
 
+    # индексы узлов train/dev/test выборок
     with open(train_file, 'r') as fi:
         idx_train = [vocab_node.stoi[line.strip()] for line in fi]
     with open(dev_file, 'r') as fi:
@@ -70,6 +95,8 @@ def main(opt):
     #--------------------------------------------------
     # Build model.
     #--------------------------------------------------
+    # opt['weight'] == True -> WCGNN (с обучаемым взаимодействием признаков),
+    # иначе -- базовая CGNN
     if opt['weight']:
         gnn = WGNN(opt, adj, deg, opt['time'])
     else:
@@ -82,6 +109,18 @@ def main(opt):
     # Train model.
     #--------------------------------------------------
     def train(epochs):
+        """Обучает модель заданное число эпох, отслеживая лучшую dev-accuracy.
+
+        После цикла в модель и оптимизатор возвращается состояние,
+        соответствующее эпохе с наилучшим качеством на dev-выборке
+        (early-stopping "по памяти", без реальной ранней остановки цикла).
+
+        Args:
+            epochs: число эпох обучения.
+
+        Returns:
+            list[tuple[float, float]]: (accuracy_dev, accuracy_test) на каждой эпохе.
+        """
         best = 0.0
         results = []
         prev_dev_acc = 0
@@ -118,6 +157,7 @@ def main(opt):
                 best = accuracy_dev
                 state = dict([('model', copy.deepcopy(trainer.model.state_dict())),
                               ('optim', copy.deepcopy(trainer.optimizer.state_dict()))])
+        # откатываем модель к состоянию с лучшей dev-accuracy
         trainer.model.load_state_dict(state['model'])
         trainer.optimizer.load_state_dict(state['optim'])
         return results
@@ -126,6 +166,14 @@ def main(opt):
 
 
     def get_accuracy(results):
+        """Выбирает test-accuracy на эпохе с наилучшей dev-accuracy.
+
+        Args:
+            results: список (accuracy_dev, accuracy_test) по эпохам.
+
+        Returns:
+            tuple[float, float]: (test_accuracy, best_dev_accuracy).
+        """
         best_dev, acc_test = 0.0, 0.0
         for d, t in results:
             if d > best_dev:
@@ -175,5 +223,3 @@ if __name__ == '__main__':
     opt = vars(args)
 
     main(opt)
-
-
