@@ -9,6 +9,7 @@ __pycache__/
 dataset/pyg_data/
 dataset/pubmed/
 dataset/cora/
+dataset/pyg_data
 *.tab
 *.txt
 *.csv
